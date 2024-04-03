@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -9,14 +10,18 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/openai"
 )
 
 const HELP_PROMPT = "!help"
 const MUSIC_PROMPT = "!music"
+const RECOMMEND_PROMPT = "!recommend"
 const GOODBYE_PROMPT = "!bye"
 
 type BotConfig struct {
 	Token               string
+	OpenAIKey           string
 	SpotifyClientId     string
 	SpotifyClientSecret string
 }
@@ -64,6 +69,23 @@ func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
 			break
 		}
 		discord.ChannelMessageSend(message.ChannelID, "Cool tunes")
+	case RECOMMEND_PROMPT:
+		ctx := context.Background()
+		llm, err := openai.New()
+		if err != nil {
+			discord.ChannelMessageSend(message.ChannelID, "Error with llm")
+			log.Fatal(err)
+		}
+
+		subject := strings.Fields(message.Content)[1]
+		modelPrompt := "Recommend a song based on the following song or artist: " + subject
+		response, err := llms.GenerateFromSinglePrompt(ctx, llm, modelPrompt)
+		if err != nil {
+			discord.ChannelMessageSend(message.ChannelID, "Error generating response")
+			log.Fatal(err)
+		}
+
+		discord.ChannelMessageSend(message.ChannelID, response)
 	case GOODBYE_PROMPT:
 		discord.ChannelMessageSend(message.ChannelID, "Later, homie")
 	default:

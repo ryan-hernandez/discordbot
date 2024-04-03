@@ -19,6 +19,7 @@ func main() {
 		Token:               os.Getenv("BOT_TOKEN"),
 		SpotifyClientId:     os.Getenv("SPOTIFY_ID"),
 		SpotifyClientSecret: os.Getenv("SPOTIFY_SECRET"),
+		OpenAIKey:           os.Getenv("OPENAI_API_KEY"),
 	}
 
 	bot.Run(config)
