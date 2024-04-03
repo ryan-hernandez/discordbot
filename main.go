@@ -11,11 +11,15 @@ import (
 func main() {
 	err := godotenv.Load("local.env")
 	if err != nil {
-		log.Fatal(err)
 		log.Fatal("Error loading .env file")
+		log.Fatal(err)
 	}
 
-	botToken := os.Getenv("BOT_TOKEN")
-	bot.BotToken = botToken
-	bot.Run()
+	config := bot.BotConfig{
+		Token:               os.Getenv("BOT_TOKEN"),
+		SpotifyClientId:     os.Getenv("SPOTIFY_ID"),
+		SpotifyClientSecret: os.Getenv("SPOTIFY_SECRET"),
+	}
+
+	bot.Run(config)
 }
