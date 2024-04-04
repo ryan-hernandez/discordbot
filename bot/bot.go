@@ -78,8 +78,10 @@ func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
 		}
 
 		subject := strings.Fields(message.Content)[1]
-		modelPrompt := "Recommend a song based on the following song or artist: " + subject
-		response, err := llms.GenerateFromSinglePrompt(ctx, llm, modelPrompt)
+		modelPrompt := "Generate an un-numbered list of ten songs based on the following artist or song: " + subject + ". Make absolute certain each artist is unique, that each song is on Spotify, and that each song is from the same genre as the source material"
+		response, err := llms.GenerateFromSinglePrompt(ctx, llm, modelPrompt,
+			llms.WithTemperature(0.9),
+		)
 		if err != nil {
 			discord.ChannelMessageSend(message.ChannelID, "Error generating response")
 			log.Fatal(err)
