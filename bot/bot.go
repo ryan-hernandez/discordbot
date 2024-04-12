@@ -14,10 +14,9 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 )
 
-const HELP_PROMPT = "!help"
-const MUSIC_PROMPT = "!music"
-const RECOMMEND_PROMPT = "!recommend"
-const GOODBYE_PROMPT = "!bye"
+const HELP_PROMPT = "!h"
+const MUSIC_PROMPT = "!m"
+const RECOMMEND_PROMPT = "!r"
 
 type BotConfig struct {
 	Token               string
@@ -52,7 +51,7 @@ func Run(config BotConfig) {
 }
 
 func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
-	// Prevent bot from responding to itself
+	// Prevent bot from responding to itself and anything that isn't a command
 	if message.Author.ID == discord.State.User.ID ||
 		message.Content[0] != '!' {
 		return
@@ -65,10 +64,9 @@ func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
 	case MUSIC_PROMPT:
 		err := validateTokens(message.Content, 3)
 		if err != nil {
-			discord.ChannelMessageSend(message.ChannelID, "Invalid music prompt: expected '!music <song-name> <artist>'")
+			discord.ChannelMessageSend(message.ChannelID, "Invalid music prompt: expected '!m <song-name> <artist>'")
 			break
 		}
-		discord.ChannelMessageSend(message.ChannelID, "Cool tunes")
 	case RECOMMEND_PROMPT:
 		ctx := context.Background()
 		llm, err := openai.New()
@@ -77,8 +75,11 @@ func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
 			log.Fatal(err)
 		}
 
-		subject := strings.Fields(message.Content)[1]
-		modelPrompt := "Generate an un-numbered list of ten songs based on the following artist or song: " + subject + ". Make absolute certain each artist is unique, that each song is on Spotify, and that each song is from the same genre as the source material"
+		subject := message.Content
+		modelPrompt :=
+			"You are to act as the perfect music suggestor. Please, generate an un-numbered list of ten songs by distinct artists based on the following artist and/or song:" + subject +
+				". Make absolute certain that each song is on Spotify having at least 5,000 plays. You will provide a link to search for the song on spotify with the following format: https://open.spotify.com/search/artist:{ARTIST}%20track:{TRACK}." +
+				" This will be used for the title of the song in the format of [title](link). Only provide the list, do not provide any flavor text."
 		response, err := llms.GenerateFromSinglePrompt(ctx, llm, modelPrompt,
 			llms.WithTemperature(0.9),
 		)
@@ -88,8 +89,6 @@ func newMessage(discord *discordgo.Session, message *discordgo.MessageCreate) {
 		}
 
 		discord.ChannelMessageSend(message.ChannelID, response)
-	case GOODBYE_PROMPT:
-		discord.ChannelMessageSend(message.ChannelID, "Later, homie")
 	default:
 		discord.ChannelMessageSend(message.ChannelID, "I'm sorry, I don't understand that command")
 	}
