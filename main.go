@@ -1,7 +1,7 @@
 package main
 
 import (
-	bot "discord-bot/bot"
+	"discord-bot/bot"
 	"log"
 	"os"
 
@@ -16,10 +16,8 @@ func main() {
 	}
 
 	config := bot.BotConfig{
-		Token:               os.Getenv("BOT_TOKEN"),
-		SpotifyClientId:     os.Getenv("SPOTIFY_ID"),
-		SpotifyClientSecret: os.Getenv("SPOTIFY_SECRET"),
-		OpenAIKey:           os.Getenv("OPENAI_API_KEY"),
+		Token:     os.Getenv("BOT_TOKEN"),
+		OpenAIKey: os.Getenv("OPENAI_API_KEY"),
 	}
 
 	bot.Run(config)
