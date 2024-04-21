@@ -3,7 +3,6 @@ package main
 import (
 	"discord-bot/bot"
 	"log"
-	"os"
 
 	godotenv "github.com/joho/godotenv"
 )
@@ -15,10 +14,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config := bot.BotConfig{
-		Token:     os.Getenv("BOT_TOKEN"),
-		OpenAIKey: os.Getenv("OPENAI_API_KEY"),
-	}
-
-	bot.Run(config)
+	bot.Run()
 }
